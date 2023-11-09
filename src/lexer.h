@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "token.h"
-#include "ErrorHandler.h"
+#include "error_handler.h"
 
 /**
  * Scans the input file and produces tokens
