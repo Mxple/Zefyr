@@ -1,0 +1,152 @@
+// ZEFYR LANGUAGE DEMO
+// Zefyr is a dynamically typed, unexpectedly performant, and versitile language that supports all programming paradigms.
+// Zefyr's goals is to be user friendly, read like plain english, and make intuitive sense to both pendantic mathematicians, and someone coming from scratch or python.
+// Zefyr makes low cost abstractions and uses a novel "block evaluation chain" to define functions and variables. Everything in Zefyr is a variable.
+
+// Block eval chain
+// The "do" keyword begins a block or scope as some might be more familiar with
+// you can think of do creating a variable, result, and then the following block's evaluation goes into result
+// the final evaluation of the final block is the result or return value of a function, or value of a variable
+
+// Zefyr features
+// Zefyr aims to provide the user with everything they need to start hacking. This means no boilerplate, no fighting the language, and a myraid of awesome features.
+// Range: "x..y" creates a range object from [x,y). y can be less than x, but they both must be integers. Ranges can be used in forloops, and for indexing arrays and strings.
+// Objects: Zefyr doesn't have all the OOP stuff in the traditional sense. Instead, it has "data" which can implement its own variables, constructor, and methods. 
+// It's OOP without the encapsulation polymorphic BS. Just simplicity.
+// STL: Zefyr has a lightweight but all-the-essentials STL. From hashmaps to bsts, from math functions to string search, its got all the basics
+// Pattern matching: That's right! Voted the most loved feature by everyone, pattern matching in Zefyr is implemented as an if else tree or hashing switch (it's optimized under the hood).
+// Lazy eval: With the "lazy" keyword, you can specify lazy variables that evaluate only when you need them. This allows for some pretty crazy stuff like infinite data structures
+// List comprehension: For all the mathematicians, using set builder notation, you can construct arrays elegantly and inline!
+// Dynamic typing: Using NaNboxing, Zefyr supports blazingly-efficient dyanmic types. 64-bit double, 32-bit int, bools, nil, and objects!
+// There's tons more features but we'll find them as we go 
+
+// Let's talk syntax. Zefyr's syntax is inspired by Ruby, Haskell, and Python. It aims to be beautiful to look at and read like english.
+// No semi colons (but you can put them! they're optional), no curly braces. Not even paranethesis! 
+// Zefyr functions are defined without paranthesis and depending on the number of parameters, when the function is called, it will simply take the next 2 values.
+
+def twoSum ref nums target as
+  map = {}
+  for i in 0..nums.size do
+    if map[i] == nil do 
+	  map[i], i
+	else do
+	  map[i] = target - nums[i]
+
+// twoSum in zefyr. 
+// zefyr function declarations begin with "def" and end with "as"
+// zefyr zefyr does not use paranthesis for anything except operator precedance
+// calling twoSum would look like: let a, b = twoSum nums target
+// as we can see, the result of twoSum is automatically unboxxed into the two variables
+
+// everything is passed in as a copy by default. we can choose to use a reference instead using the "ref" keyword before a parameter.
+
+// there are 4 ways to declare a variable 
+// 1. "let" let declares a variable normally. it's scope is limited to the indentation block and further indents. no identifier is automatically "let". variables cannot be redefined in the same scope/block
+// 2. "const" declares a variable like let, but the variable is guarenteed to be immutable
+// 3. "strict" strict is like consteval. it will tell the interpreter to evaluate the value immediatly. an error will be thrown if it cannot be evaluated immediatly
+// 4. "lazy" lazy will cause the variable to be a "thunk" or instructions on how to get the value. it will evaluate as late as possible. this allows for infinite data structs.
+// "let" behaves depending on the right value. if the right value has lazy values, then let will eval lazily. otherwise, it will try to be strict.
+// creating a "strict" variable from a lazy varaible immediatly evals the lazy variable as it is now used.
+
+// Let's implmement a linked list in Zefyr
+data LinkedList as 
+  data Node as 
+	let value = nil;	// no encapsulation because why does that even exist
+	let next = nil;
+    
+	def Node data next as 
+	  // constructor. lh-values first try to be members, then local args
+      value = value
+	  next = next
+  end Node // end is optional. its actually a comment. anything after is ignored
+	
+  head = nil;
+  size = 0;
+
+  def LinkedList as // 0 arg constructor
+  end // end 
+
+  def operator[] index as 
+    if index.type != DT.int do	// DT is a prelude enum which the interpreter evaluates uniquely (not a number, its special) 
+	  except "must be integer"
+    if index < 0 do 			// most iterables should support negative wraparound
+	  index = size + index
+    if index >= size do 
+	  except "out of bounds" 	// we can return nil here too, up to user
+    curr = head					// copy head. head is just an object which is a pointer so its 64 bits
+	do index times				// do begins a block, but it can also take x times which repeats the block x times
+	  curr = curr.next			// automatic dereference on objects
+	curr						// return curr
+
+  def delete index as 
+    | index.type != DT.int do		// | condition do. condition can also be a literal values to match on 
+	  except "must be integer"
+    | index >= size do 		
+	  except "out of bounds"
+	| 0 do				// equivilant to | index == 0 do
+	  head = head.next 
+	  size--
+	| do				// empty condition for default case ( matches everythin )
+      curr = head 
+	  do index - 1 times
+	    curr = curr.next
+	  ret = curr.next.value	 	
+	  curr.next = curr.next.next 	// deletion by dropping reference. uses reference counting (smart pointers) to manage memory
+	  ret				
+
+  def add _data index as 	// can use underscore to prefix variables that are keywords to avoid collision
+    | index.type != DT.int do	
+	  except "must be integer"
+    | index < 0 do 		
+	  index = size + index
+    | index >= size do 
+	  except "out of bounds" 
+	| do 
+	  curr = head 
+	  do index - 1 times
+	    curr = curr.next
+	  newNode = Node _data curr.next 	// Node is a data object. When these are called, Zefyr automatically looks for the constructor of the same name.
+	  curr.next = newNode
+
+`and`
+
+// Operations
+// Zefyr operations are a little different
+// Modulus. Zefyr supports `mod` for integer modulus. Real modulus for all you math nerds
+// Integer division. Zefyr uses `div` for integer division. / will return a float.
+// % is still remainder 
+// `xor`, `and`, `or`, `not` are used for bitwise operations on integers
+// left and right shift are still both "<<" and ">>"
+
+// Let's implement one final function in Zefyr to show off a few more features.
+def boyerMoore text pattern as 
+  if text.size < pattern.size do 
+    -1 
+  else do 
+    lastTable = {}
+	for i, c in enumerate pattern do  	// for each loop. enumerate is a function that takes in an iterable and produces pairs unboxxed into i, c
+	  lastTable[c] = i
+	// lastTable = {c, i in enumerate pattern} 	// equivilant list comprehension applied to map
+
+	i = 0
+	found = while i < text.size - pattern.size + 1 do 	// ofc while loops exist 
+	  j = pattern.size - 1
+	  while j >= 0 && text[i + j] == text[j] do 
+	    j--
+	  if j == -1 do 
+	    break i 		// exits the current loop and gives the following as the block's value
+	  else do 
+	  	i += j - do
+		  if lastTable[text[i + j]] == nil do 
+		    -1
+		  else do 
+		    lastTable[text[i + j]]
+	if found > text.size - pattern.size do 
+	  -1 
+	else do 
+	  found 
+
+
+
+
+    
